@@ -1,0 +1,1 @@
+cscript jslint-helper-for-wsh.js /d:.
