@@ -7,6 +7,7 @@
         utf8 = '﻿',
         fso = new ActiveXObject('Scripting.FileSystemObject'),
         files = [],
+        globals,
         args = WScript.Arguments;
 
     function echo(msg) {
@@ -86,6 +87,11 @@
             fileName = files[i];
             script_source = readFile(fileName);
             echo("--" + fileName);
+            if(globals) {
+                script_source = '/*globals ' + globals + ' */' + script_source;
+            }
+            script_source = '/*jslint undef: false */' + script_source;
+
             result = JSLINT(script_source);
 
             if (result) {
@@ -108,6 +114,8 @@
             files = [],
             enumerator,
             directory = args.Named.Item('d') || args.Named.Item('directory');
+
+        globals = args.Named.Item('g') || args.Named.Item('globals');
             
         if (directory) {
             echo('scanning files in');
