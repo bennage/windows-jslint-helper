@@ -7,8 +7,11 @@
         utf8 = '﻿',
         fso = new ActiveXObject('Scripting.FileSystemObject'),
         files = [],
-        globals,
-        args = WScript.Arguments;
+        args = WScript.Arguments,
+        options = {
+            globals: null,
+            directory: null
+        };
 
     function echo(msg) {
         WScript.Echo(msg);
@@ -57,21 +60,20 @@
         return content;
     }
 
-    function reportError(error, index) {
-        echo('\n    error [' + index + ']');
-        echo('    line ' + error.line + ' character ' + error.character);
+    function reportError(error, index, filePath) {
+        echo('\n' + filePath + '(' + error.line + ',' + error.character + ')' );
         echo('    ' + error.reason);
         echo('    ' + ltrim(error.evidence));
     }
 
-    function processErrors(errors) {
+    function processErrors(errors, filePath) {
         var i,
             error;
             
         for (i = 0; i < errors.length; i += 1) {
             error = errors[i];
             if (error) {
-                reportError(error, i);
+                reportError(error, i, filePath);
             }
         }
     }
@@ -86,27 +88,26 @@
         for (i = 0; i < files.length; i += 1) {
             fileName = files[i];
             script_source = readFile(fileName);
-            echo("--" + fileName);
-            if(globals) {
-                script_source = '/*globals ' + globals + ' */' + script_source;
+            if(options.globals) {
+                script_source = '/*globals ' + options.globals + ' */' + script_source;
             }
 
             result = JSLINT(script_source);
 
-echo('string --> ' + fileName);
-echo('name --> ' + fileName.Name);
-echo('path --> ' + fileName.Path);
             if (result) {
                 echo('OK: ' + fileName.Name);
             } else {
-                echo('\nERRORS ' + fileName.Name);
-                // JSLINT.errors.filePath = fileName.toString
-                processErrors(JSLINT.errors);
+                if(options.directory){
+                    echo('ERRORS: ' + fileName.Name);
+                }
+                processErrors(JSLINT.errors, fileName.Path);
                 echo('\n');
             }
         }
         
-        echo('\n' + i + ' files checked');
+        if(options.directory){
+            echo('\n' + i + ' files checked');
+        }
     }
     
     function getFilesToProcess(args) {
@@ -115,15 +116,15 @@ echo('path --> ' + fileName.Path);
             file,
             ext,
             files = [],
-            enumerator,
-            directory = args.Named.Item('d') || args.Named.Item('directory');
+            enumerator;
 
-        globals = args.Named.Item('g') || args.Named.Item('globals');
+        options.directory = args.Named.Item('d') || args.Named.Item('directory');
+        options.globals = args.Named.Item('g') || args.Named.Item('globals');
             
-        if (directory) {
+        if (options.directory) {
             echo('scanning files in');
-            echo(directory);
-            folder = fso.GetFolder(directory);
+            echo(options.directory);
+            folder = fso.GetFolder(options.directory);
             enumerator = new Enumerator(folder.Files);
 
             for (; !enumerator.atEnd(); enumerator.moveNext()) {
