@@ -2,7 +2,8 @@
 /*global JSLINT, WScript, ActiveXObject, Enumerator*/
 (function () {
 
-    var jslint_path = '.\\JSLint\\jslint.js',
+    var workingDirectory =WScript.ScriptFullName.replace(WScript.ScriptName,''),
+        jslint_path = workingDirectory + '\\JSLint\\jslint.js',
         jslint_source = '',
         utf8 = '﻿',
         fso = new ActiveXObject('Scripting.FileSystemObject'),
