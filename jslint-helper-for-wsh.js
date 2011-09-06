@@ -2,7 +2,7 @@
 /*global JSLINT, WScript, ActiveXObject, Enumerator*/
 (function () {
 
-    var jslint_path = 'JSLint\\jslint.js',
+    var jslint_path = '.\\JSLint\\jslint.js',
         jslint_source = '',
         utf8 = '﻿',
         fso = new ActiveXObject('Scripting.FileSystemObject'),
@@ -90,14 +90,17 @@
             if(globals) {
                 script_source = '/*globals ' + globals + ' */' + script_source;
             }
-            script_source = '/*jslint undef: false */' + script_source;
 
             result = JSLINT(script_source);
 
+echo('string --> ' + fileName);
+echo('name --> ' + fileName.Name);
+echo('path --> ' + fileName.Path);
             if (result) {
                 echo('OK: ' + fileName.Name);
             } else {
                 echo('\nERRORS ' + fileName.Name);
+                // JSLINT.errors.filePath = fileName.toString
                 processErrors(JSLINT.errors);
                 echo('\n');
             }
@@ -136,7 +139,7 @@
         
         for (i = 0; i < args.Unnamed.length; i += 1) {
             file = args.Unnamed.Item(i);
-            files.push(file);
+            files.push(fso.GetFile(file));
         }
         
         return files;
